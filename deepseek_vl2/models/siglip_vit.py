@@ -144,7 +144,20 @@ class Attention(nn.Module):
                                               deterministic=self.deterministic)
             else:
                 q, k, v = qkv.unbind(2)
-                x = memory_efficient_attention(q, k, v, p=self.attn_drop.p if self.training else 0.)
+                # x = memory_efficient_attention(q, k, v, p=self.attn_drop.p if self.training else 0.)
+                # Equivalent pytorch code
+                
+                scale = 1.0 / q.shape[-1] ** 0.5
+                q = q * scale
+                q = q.transpose(1, 2)
+                k = k.transpose(1, 2)
+                v = v.transpose(1, 2)
+                attn = q @ k.transpose(-2, -1)
+                attn = attn.softmax(-1)
+                attn = F.dropout(attn, self.attn_drop.p if self.training else 0.)
+                attn = attn @ v
+                x = attn.transpose(1, 2).contiguous()
+                
             x = x.reshape(B, N, C)
             x = self.proj(x)
             x = self.proj_drop(x)

@@ -61,6 +61,7 @@ def load_pil_images(conversations: List[Dict[str, str]]) -> List[PIL.Image.Image
     """
 
     pil_images = []
+    side_max_pixel_num = 750
 
     for message in conversations:
         if "images" not in message:
@@ -69,6 +70,12 @@ def load_pil_images(conversations: List[Dict[str, str]]) -> List[PIL.Image.Image
         for image_path in message["images"]:
             pil_img = PIL.Image.open(image_path)
             pil_img = pil_img.convert("RGB")
+            if pil_img.size[0] > pil_img.size[1] and pil_img.size[0] > side_max_pixel_num:
+                ratio = side_max_pixel_num / pil_img.size[0]
+                pil_img = pil_img.resize((side_max_pixel_num, int(pil_img.size[1]*ratio)))
+            elif pil_img.size[0] < pil_img.size[1] and pil_img.size[1] > side_max_pixel_num:
+                ratio = side_max_pixel_num / pil_img.size[1]
+                pil_img = pil_img.resize((int(pil_img.size[0]*ratio), side_max_pixel_num))
             pil_images.append(pil_img)
 
     return pil_images

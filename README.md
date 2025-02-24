@@ -100,6 +100,15 @@ On the basis of `Python >= 3.8` environment, install the necessary dependencies 
 pip install -e .
 ```
 
+### Export ONNX
+
+To export ONNX model, running the following command:
+```shell
+python export_onnx.py
+```
+
+**Note: depend on transformers v4.38.2, you can run `git checkout v4.38.2`**
+
 ### Simple Inference Example with One Image
 
 **Note: You may need 80GB GPU memory to run this script with deepseek-vl2-small and even larger for deepseek-vl2.**
