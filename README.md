@@ -107,7 +107,9 @@ To export ONNX model, running the following command:
 git clone https://github.com/huggingface/transformers
 cd transformers
 git checkout v4.38.2
+cd ..
 cp transformers_custom/modeling_llama.py transformers/src/transformers/models/llama
+pip install -e ./transformers
 python export_onnx.py
 ```
 
