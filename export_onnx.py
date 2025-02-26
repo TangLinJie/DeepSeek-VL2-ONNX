@@ -252,14 +252,14 @@ def convert_embedding():
 
 def convert_lm_head():
     model = LmHead()
-    hidden_states = torch.randn(1, HIDDEN_SIZE).to(dtype).to(device)
+    hidden_states = torch.randn(1, 1, HIDDEN_SIZE).to(dtype).to(device)
 
     module = torch.jit.trace(model.forward, hidden_states)
     torch.jit.save(module, f'{folder}/lm_head.pt')
 
 def convert_greedy_head():   
     model = GreedyHead()
-    m_logits = torch.randn(1, VOCAB_SIZE).to(dtype).to(device)
+    m_logits = torch.randn(1, 1, VOCAB_SIZE).to(dtype).to(device)
 
     torch.onnx.export(
         model, (m_logits),
@@ -272,7 +272,7 @@ def convert_greedy_head():
 
 def convert_penalty_sample_head():   
     model = PenaltySampleHead()
-    m_logits = torch.randn(1, VOCAB_SIZE).to(dtype).to(device)
+    m_logits = torch.randn(1, 1, VOCAB_SIZE).to(dtype).to(device)
     input_ids = torch.tensor([range(SEQ_LENGTH)]).to(device)
     top_p = torch.tensor([0.8]).to(device)
     temperature = torch.tensor([0.98]).to(device)

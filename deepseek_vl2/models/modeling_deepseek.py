@@ -429,6 +429,7 @@ class MoEGate(nn.Module):
             hidden_states.type(torch.float32), self.weight.type(torch.float32), None
         )
         if self.scoring_func == "softmax":
+            # run
             scores = logits.softmax(dim=-1, dtype=torch.float32)
         elif self.scoring_func == "sigmoid":
             scores = logits.sigmoid()
@@ -439,6 +440,7 @@ class MoEGate(nn.Module):
 
         ### select top-k experts
         if self.topk_method == "greedy":
+            # run
             topk_weight, topk_idx = torch.topk(
                 scores, k=self.top_k, dim=-1, sorted=False
             )
@@ -495,6 +497,7 @@ class MoEGate(nn.Module):
             denominator = topk_weight.sum(dim=-1, keepdim=True) + 1e-20
             topk_weight = topk_weight / denominator * self.routed_scaling_factor
         else:
+            # run
             topk_weight = topk_weight * self.routed_scaling_factor
         ### expert-level computation auxiliary loss
         if self.training and self.alpha > 0.0:
@@ -615,6 +618,7 @@ class DeepseekV2MoE(nn.Module):
         else:
             y = self.moe_infer(hidden_states, topk_idx, topk_weight).view(*orig_shape)
         if self.config.n_shared_experts is not None:
+            # run
             y = y + self.shared_experts(identity)
         return y
 
@@ -627,6 +631,7 @@ class DeepseekV2MoE(nn.Module):
         sorted_tokens = x[idxs // topk_ids.shape[1]]
         sorted_tokens_shape = sorted_tokens.shape
         if self.ep_size > 1:
+            # not run
             tokens_per_ep_rank = tokens_per_expert.view(self.ep_size, -1).sum(dim=1)
             tokens_per_expert_group = tokens_per_expert.new_empty(
                 tokens_per_expert.shape[0]
@@ -666,6 +671,7 @@ class DeepseekV2MoE(nn.Module):
             end_idx = start_idx + num_tokens
             if num_tokens == 0:
                 continue
+            # export onnx
             expert = self.experts[i + self.ep_rank * self.experts_per_rank]
             tokens_for_this_expert = sorted_tokens[start_idx:end_idx]
             expert_out = expert(tokens_for_this_expert)
@@ -674,6 +680,7 @@ class DeepseekV2MoE(nn.Module):
 
         outs = torch.cat(outputs, dim=0) if len(outputs) else sorted_tokens.new_empty(0)
         if self.ep_size > 1:
+            # not run
             new_x = torch.empty_like(outs)
             new_x[gatherd_idxs] = outs
             gathered_tokens = new_x.new_empty(*sorted_tokens_shape)
